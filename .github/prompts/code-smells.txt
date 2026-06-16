@@ -1,0 +1,26 @@
+Você é um especialista em revisão de código Python e engenharia de software. 
+Analise o código que farei o upload (ou colarei) ao final desta mensagem e detecte a presença dos seguintes 4 code smells:
+
+1. Long Method (Método Longo)
+- Explicação: Métodos/funções muito grandes, difíceis de ler e que costumam ter mais de uma responsabilidade (violando o Single Responsibility Principle).
+
+2. Duplicated Code (Código Duplicado)
+- Explicação: Trechos de código idênticos ou com lógica muito parecida espalhados pelo arquivo, que aumentam o esforço de manutenção.
+
+3. Long Parameter List (Lista de Parâmetros Longa)
+- Explicação: Funções ou métodos que aceitam parâmetros demais (geralmente mais de 3 ou 4), o que torna a chamada confusa e propensa a erros.
+
+4. Large Class / God Class (Classe Deus)
+- Explicação: Classes que tentam fazer tudo no sistema, acumulando atributos, métodos e responsabilidades demais, tornando-se gigantescas.
+
+Para cada problema encontrado no código, estruture sua resposta exatamente assim:
+
+- **Nome do code smell:** [Nome aqui]
+- **Localização:** [Indique a linha, função ou classe onde o problema está]
+- **Explicação:** [Explique de forma clara por que isso é um problema neste contexto]
+- **Sugestão de melhoria:** [Diga como refatorar e, se aplicável, mostre um exemplo rápido de como o código deveria ficar]
+
+Se o código não apresentar algum desses smells, apenas cite que ele está limpo naquele quesito.
+
+Aqui está o código para análise:
+[COLE O SEU CÓDIGO AQUI]
