@@ -1,0 +1,54 @@
+name: AI Code Smells
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  models: read
+  pull-requests: read
+
+jobs:
+  detect-code-smells:
+    name: Detect code smells with AI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Collect Python files
+        run: |
+          : > codigo_para_analise.txt
+
+          while IFS= read -r -d '' arquivo; do
+            {
+              echo "===== ${arquivo} ====="
+              sed -n '1,400p' "$arquivo"
+              echo
+            } >> codigo_para_analise.txt
+          done < <(find . -type f -name "*.py" \
+            -not -path "./.git/*" \
+            -not -path "./venv/*" \
+            -not -path "./.venv/*" \
+            -not -path "*/__pycache__/*" \
+            -print0 | sort -z)
+
+          if [ ! -s codigo_para_analise.txt ]; then
+            echo "Nenhum arquivo Python encontrado." > codigo_para_analise.txt
+          fi
+
+      - name: Analyze code smells with AI
+        id: ai-analysis
+        uses: actions/ai-inference@v1
+        with:
+          prompt-file: ./.github/prompts/code-smells.prompt.yml
+          file_input: |
+            codigo: ./codigo_para_analise.txt
+
+      - name: Show AI analysis result
+        run: |
+          echo "Resultado da análise de code smells:"
+          cat "${{ steps.ai-analysis.outputs.response-file }}"
