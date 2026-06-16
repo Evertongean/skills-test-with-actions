@@ -1,0 +1,23 @@
+name: AI Inference
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inference:
+    permissions:
+      contents: read
+      models: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar IA
+        id: inference
+        uses: actions/ai-inference@v1
+        with:
+          prompt: "Olá, este é um teste da AI Inference."
+
+      - name: Mostrar resposta
+        run: |
+          echo "${{ steps.inference.outputs.response }}"
