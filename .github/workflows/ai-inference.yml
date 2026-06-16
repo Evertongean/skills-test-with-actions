@@ -1,23 +1,59 @@
-name: AI Inference
+name: AI Code Smell Analysis
 
 on:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  models: read
 
 jobs:
-  inference:
-    permissions:
-      contents: read
-      models: read
-
+  ai-code-smell-analysis:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Executar IA
-        id: inference
-        uses: actions/ai-inference@v1
-        with:
-          prompt: "Olá, este é um teste da AI Inference."
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Mostrar resposta
+      - name: Build source file
         run: |
-          echo "${{ steps.inference.outputs.response }}"
+          find src -name "*.py" -type f -exec cat {} \; > source.txt
+
+      - name: Analyze code with AI
+        id: ai
+        uses: actions/ai-inference@v2.1.1
+        with:
+          prompt-file: .github/prompts/code.prompt.yml
+          file_input: |
+            code: source.txt
+
+      - name: Save AI response
+        env:
+          AI_RESPONSE: ${{ steps.ai.outputs.response }}
+        run: |
+          printf '%s\n' "$AI_RESPONSE" \
+            | sed 's/^```json//' \
+            | sed 's/^```//' \
+            | sed 's/```$//' \
+            > result.json
+
+      - name: Show AI response
+        run: |
+          cat result.json
+
+      - name: Validate JSON
+        run: |
+          jq . result.json
+
+      - name: Fail if code smells are found
+        run: |
+          HAS_SMELLS=$(jq -r '.has_code_smells // false' result.json)
+
+          if [ "$HAS_SMELLS" = "true" ]; then
+            echo "Code smells detected"
+            exit 1
+          fi
+
+          echo "No code smells detected"
