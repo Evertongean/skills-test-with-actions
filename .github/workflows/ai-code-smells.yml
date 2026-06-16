@@ -2,7 +2,8 @@ name: AI Code Smells
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -21,27 +22,30 @@ jobs:
 
       - name: Collect Python files
         run: |
-          : > codigo_para_analise.txt
+          echo "Coletando arquivos Python..."
 
-          while IFS= read -r -d '' arquivo; do
-            {
-              echo "===== ${arquivo} ====="
-              sed -n '1,400p' "$arquivo"
-              echo
-            } >> codigo_para_analise.txt
-          done < <(find . -type f -name "*.py" \
+          find . -type f -name "*.py" \
             -not -path "./.git/*" \
             -not -path "./venv/*" \
             -not -path "./.venv/*" \
             -not -path "*/__pycache__/*" \
-            -print0 | sort -z)
+            -print | sort > arquivos_python.txt
 
-          if [ ! -s codigo_para_analise.txt ]; then
-            echo "Nenhum arquivo Python encontrado." > codigo_para_analise.txt
-          fi
+          echo "" > codigo_para_analise.txt
+
+          while read arquivo; do
+            echo "==============================" >> codigo_para_analise.txt
+            echo "ARQUIVO: $arquivo" >> codigo_para_analise.txt
+            echo "==============================" >> codigo_para_analise.txt
+            sed -n '1,400p' "$arquivo" >> codigo_para_analise.txt
+            echo "" >> codigo_para_analise.txt
+          done < arquivos_python.txt
+
+          echo "Arquivos enviados para análise:"
+          cat arquivos_python.txt
 
       - name: Analyze code smells with AI
-        id: ai-analysis
+        id: ai_analysis
         uses: actions/ai-inference@v1
         with:
           prompt-file: ./.github/prompts/code-smells.prompt.yml
@@ -51,4 +55,4 @@ jobs:
       - name: Show AI analysis result
         run: |
           echo "Resultado da análise de code smells:"
-          cat "${{ steps.ai-analysis.outputs.response-file }}"
+          echo "${{ steps.ai_analysis.outputs.response }}"
